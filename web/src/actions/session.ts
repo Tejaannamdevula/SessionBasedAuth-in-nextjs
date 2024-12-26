@@ -53,15 +53,9 @@ export async function createSession(data: SessionPayload) {
       sameSite: "lax",
       path: "/",
     });
-
-    if (role === "admin") {
-      redirect("/admin");
-    } else {
-      redirect("/user");
-    }
   } catch (error) {
     console.error("Failed to create session:", error);
-    redirect("/login");
+    redirect("/api/login");
   }
 }
 
@@ -72,12 +66,6 @@ export async function verifySession() {
     const session = await decrypt(cookie);
 
     if (!session?.userId) {
-      return { isAuth: false, role: null };
-    }
-
-    // Check if session is expired
-    if (session.expiresAt && new Date(session.expiresAt) < new Date()) {
-      await deleteSession();
       return { isAuth: false, role: null };
     }
 
@@ -126,9 +114,3 @@ export async function updateSession() {
     return null;
   }
 }
-
-export const deleteSession = async () => {
-  const cookieStore = await cookies();
-  cookieStore.delete("session");
-  redirect("/login");
-};

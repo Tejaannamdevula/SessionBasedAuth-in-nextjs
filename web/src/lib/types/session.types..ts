@@ -4,5 +4,5 @@ export type SessionPayload = {
   userId: string | number;
   email: string;
   role: string;
-  expiresAt: Date;
+  expiresAt?: Date;
 };

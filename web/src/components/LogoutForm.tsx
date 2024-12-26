@@ -1,8 +1,11 @@
+"use server";
+
 import { Button } from "@/components/ui/button";
+import { logout } from "@/actions/auth";
 
 const LogoutForm = () => {
   return (
-    <form>
+    <form action={logout}>
       <Button type="submit" variant="destructive">
         Logout
       </Button>

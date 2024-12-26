@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
-import { verifySession } from "@/actions/session";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -23,22 +22,12 @@ export default async function aRootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let isAuthenticated = false;
-
-  try {
-    const session = await verifySession();
-    // console.log("nav", session);
-    isAuthenticated = session?.isAuth || false;
-  } catch (err) {
-    isAuthenticated = false;
-    console.log(err);
-  }
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar isAuthenticated={isAuthenticated} />
+        <Navbar />
 
         {children}
       </body>

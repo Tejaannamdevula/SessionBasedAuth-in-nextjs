@@ -4,9 +4,11 @@ import { ActionResponse, signUpFormData } from "@/lib/types/signup.types";
 import { db } from "@/db-drizzle";
 import { users } from "../db-drizzle/schema";
 import { eq } from "drizzle-orm";
-import { deleteSession } from "./session";
-import { signUpFormSchema } from "@/lib/definitions";
+import { signUpFormSchema, loginFormSchema } from "@/lib/definitions";
+import { createSession } from "./session";
 import bcrypt from "bcrypt";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 export async function signup(
   prevState: ActionResponse | null,
   formData: FormData
@@ -74,7 +76,61 @@ export async function signup(
   };
 }
 
-export async function login() {}
+export async function login(
+  prevState: ActionResponse | null,
+  formData: FormData
+): Promise<ActionResponse> {
+  // Simulate network delay
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // 1. Validate form fields
+  const validatedFields = loginFormSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      success: false,
+      message: "Data is not valid",
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  const { email, password } = validatedFields.data;
+
+  const user = await db.query.users.findFirst({
+    where: eq(users.email, email),
+  });
+
+  if (!user) {
+    return {
+      success: false,
+      message: "User not found. Please check your credentials.",
+    };
+  }
+
+  // Compare the hashed password with the provided password
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+
+  if (!isPasswordValid) {
+    return {
+      success: false,
+      message: "Invalid password. Please try again.",
+    };
+  }
+
+  // Create a session or token for the authenticated user (for example, using a session cookie)
+  await createSession({ userId: user.id, role: user.role, email: user.email });
+  if (user.role === "admin") {
+    return redirect("/admin");
+  } else {
+    return redirect("/user");
+  }
+}
+
 export async function logout() {
-  deleteSession();
+  const cookieStore = await cookies();
+  cookieStore.delete("session");
+  redirect("/api/login");
 }
