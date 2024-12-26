@@ -4,7 +4,7 @@ import { ActionResponse, signUpFormData } from "@/lib/types/signup.types";
 import { db } from "@/db-drizzle";
 import { users } from "../db-drizzle/schema";
 import { eq } from "drizzle-orm";
-
+import { deleteSession } from "./session";
 import { signUpFormSchema } from "@/lib/definitions";
 import bcrypt from "bcrypt";
 export async function signup(
@@ -70,6 +70,11 @@ export async function signup(
 
   return {
     success: true,
-    message: "Registration successful!",
+    message: "Registration successful! login",
   };
+}
+
+export async function login() {}
+export async function logout() {
+  deleteSession();
 }

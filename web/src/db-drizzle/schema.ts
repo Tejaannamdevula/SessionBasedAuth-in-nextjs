@@ -7,7 +7,7 @@ import {
   serial,
   unique,
 } from "drizzle-orm/pg-core";
-
+import { InferInsertModel } from "drizzle-orm";
 export const userRole = pgEnum("userRole", ["admin", "user"]);
 
 export const eventStatus = pgEnum("eventStatus", [
@@ -65,17 +65,19 @@ export const preferences = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
-  (table) => ({
-    uniquePreference: unique("unique_preference").on(
-      table.userId,
-      table.sectionId
-    ),
-    uniqueOrder: unique("unique_order").on(
-      table.userId,
-      table.eventId,
-      table.preferenceOrder
-    ),
-  })
+  (table) => [
+    {
+      uniquePreference: unique("unique_preference").on(
+        table.userId,
+        table.sectionId
+      ),
+      uniqueOrder: unique("unique_order").on(
+        table.userId,
+        table.eventId,
+        table.preferenceOrder
+      ),
+    },
+  ]
 );
 
 export const allocations = pgTable(
@@ -96,10 +98,14 @@ export const allocations = pgTable(
       .notNull()
       .references(() => users.id),
   },
-  (table) => ({
-    uniqueAllocation: unique("unique_allocation").on(
-      table.userId,
-      table.eventId
-    ),
-  })
+  (table) => [
+    {
+      uniqueAllocation: unique("unique_allocation").on(
+        table.userId,
+        table.eventId
+      ),
+    },
+  ]
 );
+
+export type NewUser = InferInsertModel<typeof users>;
